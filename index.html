@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Expense Manager — Dashboard (Professional)</title>
+
+  <!-- Bootstrap + Icons + AOS + Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{--accent:#00a699;--muted:#6c757d;--bg:#f4f7f9}
+    body{font-family:'Poppins',system-ui,Arial,sans-serif;background:var(--bg);}
+    .sidebar{width:260px;background:#0b2330;color:#fff;min-height:100vh;position:fixed}
+    .sidebar .nav-link{color:rgba(255,255,255,0.9)}
+    .sidebar .nav-link.active{background:rgba(255,255,255,0.05);border-radius:8px}
+    .content{margin-left:260px;padding:28px}
+    .card-hero{background:#fff;border-radius:12px;padding:18px;box-shadow:0 6px 20px rgba(11,35,48,0.06)}
+    .stat-card{border-radius:12px;padding:16px;background:#fff;box-shadow:0 8px 24px rgba(11,35,48,0.06)}
+    .expense-card,.group-card{background:#fff;border-radius:12px;padding:14px;box-shadow:0 8px 22px rgba(11,35,48,0.04);margin-bottom:12px}
+    .accent{color:var(--accent)}
+    .btn-accent{background:var(--accent);color:#fff;border:none}
+    .profile-box{position:absolute;bottom:24px;width:100%}
+    .sidebar .logo{font-weight:700;font-size:18px}
+    .illustration{max-width:100%;border-radius:10px}
+    .small-muted{color:var(--muted);font-size:0.9rem}
+    @media(max-width:991px){.sidebar{position:relative;width:100%;min-height:auto}.content{margin-left:0;padding:16px}}
+  </style>
+</head>
+<body>
+
+<div class="d-flex">
+  <!-- SIDEBAR -->
+  <aside class="sidebar p-3 d-flex flex-column">
+    <div class="mb-4 px-2">
+      <div class="logo mb-2">💼 ExpenseManager</div>
+      <div class="small-muted">Share & Settle with ease</div>
+    </div>
+
+    <nav class="nav flex-column px-2 mb-4">
+      <a class="nav-link active" href="#" data-route="dashboard"><i class="fa fa-home me-2"></i> Dashboard</a>
+      <a class="nav-link" href="#" data-route="create-group"><i class="fa fa-users me-2"></i> Create Group</a>
+      <a class="nav-link" href="#" data-route="add-expense"><i class="fa fa-hand-holding-dollar me-2"></i> Add Expense</a>
+      <a class="nav-link" href="#" data-route="settle"><i class="fa fa-balance-scale-left me-2"></i> Settle</a>
+      <a class="nav-link mt-3" href="#" id="navLogout"><i class="fa fa-sign-out-alt me-2"></i> Logout</a>
+    </nav>
+
+    <div class="profile-box px-3">
+      <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:rgba(255,255,255,0.04)">
+        <div class="rounded-circle bg-light text-dark d-flex align-items-center justify-content-center" style="width:44px;height:44px">U</div>
+        <div>
+          <div id="sideName" class="fw-semibold">Guest</div>
+          <div id="sideEmail" class="small-muted">Not signed in</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content flex-fill">
+
+    <!-- AUTH / APP container -->
+    <div id="authContainer">
+      <!-- Centered auth card -->
+      <div class="d-flex justify-content-center align-items-center" style="min-height:70vh">
+        <div class="card card-hero p-4" style="max-width:880px;width:100%;">
+          <div class="row g-0">
+            <div class="col-lg-6 p-4">
+              <h3 class="mb-2">Welcome to ExpenseManager</h3>
+              <p class="small-muted">Create account, verify email and start tracking shared expenses with your groups.</p>
+
+              <!-- LOGIN FORM -->
+              <form id="loginForm" class="mt-3">
+                <div class="mb-2"><label class="form-label">Email</label><input id="loginEmail" class="form-control" type="email" required></div>
+                <div class="mb-3"><label class="form-label">Password</label><input id="loginPass" class="form-control" type="password" required></div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-accent" type="submit">Login</button>
+                  <button class="btn btn-outline-secondary" id="btnShowSignup" type="button">Create account</button>
+                </div>
+                <div class="mt-3 small-muted">Don't have an account? <a href="#" id="linkSignup">Sign up</a></div>
+              </form>
+
+              <!-- SIGNUP FORM (hidden) -->
+              <form id="signupForm" class="mt-3 d-none">
+                <div class="mb-2"><label class="form-label">Full name</label><input id="suName" class="form-control" type="text" required></div>
+                <div class="mb-2"><label class="form-label">Email</label><input id="suEmail" class="form-control" type="email" required></div>
+                <div class="mb-3"><label class="form-label">Password</label><input id="suPass" class="form-control" type="password" required></div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-accent" type="submit">Sign up</button>
+                  <button class="btn btn-outline-secondary" id="btnCancelSignup" type="button">Back</button>
+                </div>
+              </form>
+
+              <!-- VERIFY VIEW -->
+              <div id="verifyView" class="mt-3 d-none">
+                <p class="small-muted">We sent a verification code to <span id="verifyEmail"></span>. (Demo: code shown below)</p>
+                <div class="mb-2"><label class="form-label">Enter code</label><input id="inputCode" class="form-control" type="text"></div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-success" id="btnVerify">Verify</button>
+                  <button class="btn btn-outline-secondary" id="btnResend">Resend</button>
+                </div>
+                <div class="mt-2 small-muted">Demo code: <strong id="demoCode">—</strong></div>
+              </div>
+
+            </div>
+            <div class="col-lg-6 d-none d-lg-block p-3">
+              <img src="https://images.unsplash.com/photo-1556761175-129418cb2dfe?q=80&w=800&auto=format&fit=crop" alt="illustration" class="illustration">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN APP (hidden until auth) -->
+    <div id="app" class="d-none">
+
+      <!-- Top bar inside content -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h3 class="mb-0">Dashboard</h3>
+          <div class="small-muted">Welcome, <span id="userNameTop">User</span> 👋</div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-outline-secondary" id="btnCreateGroupNav"><i class="fa fa-users me-2"></i>Create Group</button>
+          <button class="btn btn-accent" id="btnAddExpenseNav"><i class="fa fa-plus me-2"></i>Add Expense</button>
+        </div>
+      </div>
+
+      <!-- Hero + stats -->
+      <div class="row g-3 mb-3">
+        <div class="col-lg-8">
+          <div class="card-hero p-3" data-aos="fade-up">
+            <div class="d-flex align-items-center gap-3">
+              <div>
+                <h5 class="mb-1">Keep track of shared expenses</h5>
+                <p class="small-muted mb-0">Create groups, add expenses and settle balances with ease.</p>
+                <div class="mt-3 d-flex gap-2">
+                  <button class="btn btn-accent" id="heroAdd">Add Expense</button>
+                  <button class="btn btn-outline-secondary" id="heroGroup">Create Group</button>
+                </div>
+              </div>
+              <img src="https://images.unsplash.com/photo-1588702547923-7093a6c3ba33?q=80&w=500&auto=format&fit=crop" style="max-width:220px;border-radius:10px;margin-left:auto" alt="banner">
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="stat-card p-3" data-aos="fade-left">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <div class="small-muted">Total Spent</div>
+                <div id="statTotal" class="h5 mt-1">₹0</div>
+              </div>
+              <div><i class="fa fa-wallet fa-2x accent"></i></div>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between small-muted">
+              <div>Groups</div><div id="statGroups">0</div>
+            </div>
+            <div class="d-flex justify-content-between small-muted mt-1">
+              <div>Pending</div><div id="statPending">₹0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent expenses (vertical cards) -->
+      <div class="row">
+        <div class="col-lg-7">
+          <h5 class="mb-3">Recent Expenses</h5>
+          <div id="expensesFeed"></div>
+        </div>
+        <div class="col-lg-5">
+          <h5 class="mb-3">Your Groups</h5>
+          <div id="groupsFeed"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CREATE GROUP / ADD EXPENSE / SETTLE views (modals) -->
+    <div class="modal fade" id="modalCreateGroup" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header"><h5 class="modal-title">Create Group</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+          <div class="modal-body">
+            <form id="formCreateGroup">
+              <div class="mb-2"><label class="form-label">Group name</label><input id="cgName" class="form-control" required></div>
+              <div class="mb-2"><label class="form-label">Description</label><input id="cgDesc" class="form-control"></div>
+              <div class="mb-2"><label class="form-label">Add members (comma separated)</label><input id="cgMembers" class="form-control" placeholder="e.g. Amit,Priya,Rekha"></div>
+              <div class="d-flex justify-content-end gap-2"><button type="submit" class="btn btn-accent">Create</button><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modalAddExpense" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header"><h5 class="modal-title">Add Expense</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+          <div class="modal-body">
+            <form id="formAddExpense">
+              <div class="mb-2"><label class="form-label">Group</label><select id="aeGroup" class="form-select"></select></div>
+              <div class="mb-2"><label class="form-label">Title</label><input id="aeTitle" class="form-control" required></div>
+              <div class="mb-2 d-flex gap-2">
+                <div class="flex-fill"><label class="form-label">Amount (₹)</label><input id="aeAmount" type="number" min="0" step="0.01" class="form-control" required></div>
+                <div class="flex-fill"><label class="form-label">Paid by</label><input id="aePaidBy" class="form-control" placeholder="Name"></div>
+              </div>
+              <div class="mb-2"><label class="form-label">Split equally?</label><select id="aeSplit" class="form-select"><option value="yes">Yes</option><option value="no">No (manual later)</option></select></div>
+              <div class="d-flex justify-content-end gap-2"><button class="btn btn-accent" type="submit">Add</button><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modalSettle" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header"><h5 class="modal-title">Settle Balances</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+          <div class="modal-body" id="settleBody"></div>
+          <div class="modal-footer"><button class="btn btn-accent" id="btnConfirmSettle">Mark All Settled</button></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+AOS.init({duration:600});
+
+// Keys
+const USERS_KEY='exp_users_v2';
+const SESSION_KEY='exp_session_v2';
+const DB_KEY='exp_db_v2';
+
+// Helpers
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function loadUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY))||[]}catch(e){return []}}
+function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u))}
+function saveSession(email){localStorage.setItem(SESSION_KEY,email)}
+function loadSession(){return localStorage.getItem(SESSION_KEY)}
+function clearSession(){localStorage.removeItem(SESSION_KEY)}
+function loadDB(){try{return JSON.parse(localStorage.getItem(DB_KEY))||{groups:[],expenses:[]}}catch(e){return {groups:[],expenses:[]}}}
+function saveDB(db){localStorage.setItem(DB_KEY,JSON.stringify(db))}
+
+let DB = loadDB();
+if(!DB.groups) DB.groups=[]; if(!DB.expenses) DB.expenses=[];
+
+// UI refs
+const authContainer = document.getElementById('authContainer');
+const app = document.getElementById('app');
+const sideName = document.getElementById('sideName');
+const sideEmail = document.getElementById('sideEmail');
+const userNameTop = document.getElementById('userNameTop');
+
+// Auth elements
+const loginForm = document.getElementById('loginForm');
+const signupForm = document.getElementById('signupForm');
+const btnShowSignup = document.getElementById('btnShowSignup');
+const btnCancelSignup = document.getElementById('btnCancelSignup');
+const linkSignup = document.getElementById('linkSignup');
+const verifyView = document.getElementById('verifyView');
+const verifyEmail = document.getElementById('verifyEmail');
+const demoCode = document.getElementById('demoCode');
+const inputCode = document.getElementById('inputCode');
+
+// Nav actions
+document.querySelectorAll('[data-route]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault(); const r=el.getAttribute('data-route'); if(r==='dashboard'){ showDashboard(); } else if(r==='create-group'){ showModal('modalCreateGroup')} else if(r==='add-expense'){ showModal('modalAddExpense')} else if(r==='settle'){ showModal('modalSettle'); renderSettle(); }}));
+document.getElementById('navLogout').addEventListener('click',()=>doLogout());
+
+// Show signup/login toggle
+btnShowSignup.addEventListener('click',()=>{loginForm.classList.add('d-none'); signupForm.classList.remove('d-none');});
+btnCancelSignup.addEventListener('click',()=>{signupForm.classList.add('d-none'); loginForm.classList.remove('d-none');});
+linkSignup.addEventListener('click',e=>{e.preventDefault(); btnShowSignup.click();});
+
+// Verification flow
+let pendingVerification=null; // {email,code}
+function genCode(){return Math.floor(100000+Math.random()*900000).toString()}
+
+// Signup handler
+signupForm.addEventListener('submit',e=>{e.preventDefault(); const name=document.getElementById('suName').value.trim(); const email=document.getElementById('suEmail').value.trim().toLowerCase(); const pass=document.getElementById('suPass').value; const users=loadUsers(); if(users.find(u=>u.email===email)){alert('Email already exists — please login'); return;} const code=genCode(); const user={id:uid(),name,email,password:pass,verified:false,verificationCode:code}; users.push(user); saveUsers(users); pendingVerification={email,code}; verifyEmail.innerText=email; demoCode.innerText=code; loginForm.classList.add('d-none'); signupForm.classList.add('d-none'); verifyView.classList.remove('d-none');});
+
+// Resend
+document.getElementById('btnResend').addEventListener('click',()=>{ if(!pendingVerification){alert('No pending verification');return} const users=loadUsers(); const u=users.find(x=>x.email===pendingVerification.email); if(!u){alert('User not found');return} const nc=genCode(); u.verificationCode=nc; saveUsers(users); pendingVerification.code=nc; demoCode.innerText=nc; alert('Code resent (demo shows it)');});
+
+// Verify code
+document.getElementById('btnVerify').addEventListener('click',()=>{ const code=inputCode.value.trim(); if(!pendingVerification){alert('Nothing to verify');return} const users=loadUsers(); const u=users.find(x=>x.email===pendingVerification.email); if(!u){alert('User not found');return} if(code===u.verificationCode){u.verified=true; u.verificationCode=null; saveUsers(users); pendingVerification=null; alert('Email verified — please login'); verifyView.classList.add('d-none'); loginForm.classList.remove('d-none'); } else alert('Incorrect code');});
+
+// Login handler
+loginForm.addEventListener('submit',e=>{e.preventDefault(); const email=document.getElementById('loginEmail').value.trim().toLowerCase(); const pass=document.getElementById('loginPass').value; const users=loadUsers(); const u=users.find(x=>x.email===email && x.password===pass); if(!u){alert('Invalid credentials');return} if(!u.verified){ pendingVerification={email:u.email,code:u.verificationCode||genCode()}; if(!u.verificationCode){u.verificationCode=pendingVerification.code; saveUsers(users);} verifyEmail.innerText=u.email; demoCode.innerText=u.verificationCode; loginForm.classList.add('d-none'); verifyView.classList.remove('d-none'); return;} // success
+ saveSession(u.email); startApp(u);
+});
+
+// Logout
+function doLogout(){ if(confirm('Logout?')){ clearSession(); location.reload(); }}
+
+// Start app
+function startApp(user){ authContainer.classList.add('d-none'); app.classList.remove('d-none'); sideName.innerText=user.name; sideEmail.innerText=user.email; userNameTop.innerText=user.name; renderAll();}
+
+// Restore session
+(function(){ const email=loadSession(); if(!email) return; const users=loadUsers(); const u=users.find(x=>x.email===email); if(u) startApp(u); })();
+
+// Initial sample DB if empty
+if(DB.groups.length===0 && DB.expenses.length===0){
+  const g1={id:uid(),name:'Weekend Trip',desc:'Friends getaway',members:['Amit','Priya','Rekha']};
+  const g2={id:uid(),name:'Flatmates',desc:'Monthly bills & groceries',members:['Sam','Ravi']};
+  DB.groups=[g1,g2];
+  DB.expenses=[
+    {id:uid(),groupId:g1.id,groupName:g1.name,title:'Lunch',amount:1200,paidBy:'Amit',split:{Amit:400,Priya:400,Rekha:400},date:Date.now()-86400000,settled:false},
+    {id:uid(),groupId:g2.id,groupName:g2.name,title:'Electricity',amount:3000,paidBy:'Sam',split:{Sam:1500,Ravi:1500},date:Date.now()-3600000,settled:false}
+  ];
+  saveDB(DB);
+}
+
+// Render helpers
+function formatMoney(n){return '₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
+function renderAll(){ renderStats(); renderExpenses(); renderGroups(); }
+function renderStats(){ document.getElementById('statTotal').innerText = formatMoney(DB.expenses.reduce((s,e)=>s+Number(e.amount),0)); document.getElementById('statGroups').innerText = DB.groups.length; document.getElementById('statPending').innerText = formatMoney(DB.expenses.filter(e=>!e.settled).reduce((s,e)=>s+Number(e.amount),0)); }
+
+// ---- MODIFIED renderExpenses() ----
+// Uses simple small images for titles containing "electricity" or "lunch"
+function renderExpenses(){
+  const container=document.getElementById('expensesFeed');
+  container.innerHTML='';
+  DB.expenses.slice().reverse().forEach(e=>{
+    let imgSrc =
+      e.title.toLowerCase().includes('electricity')
+        ? 'https://unsplash.com/photos/tilt-shift-lens-photography-of-clear-glass-bulb-Bb9jWuTMPUk?utm_source=unsplash&utm_medium=referral&utm_content=creditShareLink'
+        : e.title.toLowerCase().includes('lunch')
+        ? 'https://images.unsplash.com/photo-1551218808-94e220e084d2?q=80&w=200&auto=format&fit=crop'
+        : 'https://images.unsplash.com/photo-1542223616-45b7d7d7b6f8?q=80&w=140&auto=format&fit=crop';
+    const el=document.createElement('div');
+    el.className='expense-card';
+    el.setAttribute('data-aos','fade-up');
+    el.innerHTML = `
+      <div class="d-flex align-items-start">
+        <img src="${imgSrc}" style="width:72px;height:72px;border-radius:10px;object-fit:cover;margin-right:12px">
+        <div class="flex-fill">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h6 class="mb-1">${e.title}</h6>
+              <div class="small-muted">${e.groupName} • Paid by ${e.paidBy}</div>
+            </div>
+            <div class="text-end">
+              <div class="h6 mb-1 accent">${formatMoney(e.amount)}</div>
+              <div class="small ${e.settled? 'text-success':'text-warning'}">${e.settled? 'Settled':'Open'}</div>
+            </div>
+          </div>
+          <div class="mt-2 small-muted">${new Date(e.date).toLocaleString()}</div>
+          <div class="mt-2 d-flex justify-content-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteExpense('${e.id}')">Delete</button></div>
+        </div>
+      </div>`;
+    container.appendChild(el);
+  });
+}
+
+// Groups
+function renderGroups(){
+  const container=document.getElementById('groupsFeed');
+  container.innerHTML='';
+  DB.groups.forEach(g=>{
+    const total = DB.expenses.filter(x=>x.groupId===g.id).reduce((s,x)=>s+Number(x.amount),0);
+    const el=document.createElement('div');
+    el.className='group-card';
+    el.setAttribute('data-aos','fade-up');
+    el.innerHTML = `
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h6 class="mb-1">${g.name}</h6>
+          <div class="small-muted">${g.desc||''}</div>
+        </div>
+        <div class="text-end">
+          <div class="h6 mb-1">${formatMoney(total)}</div>
+          <div class="small-muted">${g.members.length} members</div>
+        </div>
+      </div>
+      <div class="mt-2 small">${g.members.map(m=>`<span class="badge bg-light text-dark me-1">${m}</span>`).join('')}</div>
+      <div class="mt-3 d-flex gap-2"><button class="btn btn-sm btn-outline-primary" onclick="viewGroup('${g.id}')">View</button><button class="btn btn-sm btn-success" onclick="settleGroup('${g.id}')">Settle</button><button class="btn btn-sm btn-outline-danger" onclick="deleteGroup('${g.id}')">Delete</button></div>
+    `;
+    container.appendChild(el);
+  });
+}
+
+// Modal helper
+function showModal(id){ const m=new bootstrap.Modal(document.getElementById(id)); m.show(); if(id==='modalAddExpense') populateAddExpense(); }
+
+// CREATE GROUP modal form
+const formCreateGroup = document.getElementById('formCreateGroup');
+formCreateGroup.addEventListener('submit',e=>{e.preventDefault(); const name=document.getElementById('cgName').value.trim(); const desc=document.getElementById('cgDesc').value.trim(); const members=document.getElementById('cgMembers').value.split(',').map(x=>x.trim()).filter(x=>x); if(!name){alert('Group name required');return} const g={id:uid(),name,desc,members}; DB.groups.push(g); saveDB(DB); bootstrap.Modal.getInstance(document.getElementById('modalCreateGroup')).hide(); renderAll(); showToast('Group created'); formCreateGroup.reset();});
+
+// ADD EXPENSE modal
+function populateAddExpense(){ const sel=document.getElementById('aeGroup'); sel.innerHTML=''; DB.groups.forEach(g=>{ const o=document.createElement('option'); o.value=g.id; o.innerText=g.name; sel.appendChild(o); }); }
+const formAddExpense=document.getElementById('formAddExpense');
+formAddExpense.addEventListener('submit',e=>{e.preventDefault(); const gid=document.getElementById('aeGroup').value; const g = DB.groups.find(x=>x.id===gid); const title=document.getElementById('aeTitle').value.trim(); const amount=Number(document.getElementById('aeAmount').value)||0; const paidBy=document.getElementById('aePaidBy').value.trim()||'Unknown'; if(!g){alert('Select group');return} const splitOption=document.getElementById('aeSplit').value; let split={}; if(splitOption==='yes'){ const per=+(amount/g.members.length).toFixed(2); g.members.forEach(m=>split[m]=per);} const exp={id:uid(),groupId:g.id,groupName:g.name,title,amount,paidBy,split,date:Date.now(),settled:false}; DB.expenses.push(exp); saveDB(DB); bootstrap.Modal.getInstance(document.getElementById('modalAddExpense')).hide(); renderAll(); showToast('Expense added'); formAddExpense.reset();});
+
+// VIEW & SETTLE
+function viewGroup(id){ const g=DB.groups.find(x=>x.id===id); if(!g){alert('Not found');return} const exps=DB.expenses.filter(x=>x.groupId===id); let txt=`${g.name}\n\nMembers: ${g.members.join(', ')}\n\nExpenses:\n`; exps.forEach(x=> txt+=`- ${x.title}: ${formatMoney(x.amount)} (${x.paidBy})\n`); alert(txt);} 
+
+function settleGroup(id){
+  const body=document.getElementById('settleBody'); body.innerHTML='';
+  const exps=DB.expenses.filter(x=>x.groupId===id && !x.settled);
+  if(exps.length===0){ body.innerHTML='<div class="small-muted">No open expenses in this group.</div>'; }
+  else {
+    const g=DB.groups.find(x=>x.id===id);
+    const net={};
+    g.members.forEach(m=>net[m]=0);
+    exps.forEach(e=>{
+      net[e.paidBy]+=Number(e.amount);
+      Object.entries(e.split||{}).forEach(([m,amt])=> net[m]-=Number(amt));
+    });
+    const owes=[], owed=[];
+    Object.entries(net).forEach(([m,v])=>{ if(v>0.01) owed.push({m,amt:v}); else if(v<-0.01) owes.push({m,amt:-v}); });
+    let i=0,j=0; const settles=[];
+    while(i<owes.length && j<owed.length){
+      const a=owes[i], b=owed[j]; const pay=Math.min(a.amt,b.amt);
+      settles.push({from:a.m,to:b.m,amt:pay});
+      a.amt-=pay; b.amt-=pay;
+      if(a.amt<0.01)i++; if(b.amt<0.01)j++;
+    }
+    body.innerHTML = settles.map(s=>`<div class="d-flex justify-content-between align-items-center p-2"><div>${s.from} → <strong>${s.to}</strong></div><div>${formatMoney(s.amt)}</div></div>`).join('');
+  }
+  const modal=new bootstrap.Modal(document.getElementById('modalSettle')); modal.show();
+  document.getElementById('btnConfirmSettle').onclick = ()=>{
+    if(confirm('Mark all expenses in this group as settled?')){
+      DB.expenses.forEach(x=>{ if(x.groupId===id) x.settled=true});
+      saveDB(DB); renderAll(); modal.hide(); showToast('Marked settled');
+    }
+  }
+}
+
+function renderSettle(){
+  const body=document.getElementById('settleBody'); body.innerHTML='';
+  const exps=DB.expenses.filter(x=>!x.settled);
+  if(exps.length===0) body.innerHTML='<div class="small-muted">All caught up — no open expenses.</div>';
+  else {
+    const groups = [...new Set(exps.map(e=>e.groupId))];
+    groups.forEach(gid=>{
+      const g=DB.groups.find(x=>x.id===gid);
+      const count=exps.filter(e=>e.groupId===gid).length;
+      const div=document.createElement('div'); div.className='p-2 mb-2';
+      div.innerHTML=`<div class="d-flex justify-content-between"><div>${g.name}</div><div>${count} open</div></div>`;
+      body.appendChild(div);
+    });
+  }
+  document.getElementById('btnConfirmSettle').onclick=()=>{
+    if(confirm('Mark all open expenses as settled?')){
+      DB.expenses.forEach(x=>x.settled=true); saveDB(DB); renderAll(); showToast('All settled'); bootstrap.Modal.getInstance(document.getElementById('modalSettle')).hide();
+    }
+  }
+}
+
+// Quick hero actions
+document.getElementById('heroAdd').addEventListener('click',()=>showModal('modalAddExpense'));
+document.getElementById('heroGroup').addEventListener('click',()=>showModal('modalCreateGroup'));
+document.getElementById('btnCreateGroupNav').addEventListener('click',()=>showModal('modalCreateGroup'));
+document.getElementById('btnAddExpenseNav').addEventListener('click',()=>showModal('modalAddExpense'));
+
+// Simple toast
+function showToast(msg){ const t=document.createElement('div'); t.className='toast align-items-center text-bg-dark border-0 show'; t.style.position='fixed'; t.style.right='20px'; t.style.bottom=(20+(document.querySelectorAll('.toast').length*60))+'px'; t.innerHTML=`<div class="d-flex"><div class="toast-body">${msg}</div><button class="btn-close btn-close-white me-2 m-auto" onclick="this.parentElement.parentElement.remove()"></button></div>`; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
+
+// show dashboard
+function showDashboard(){ document.querySelectorAll('[data-route]').forEach(el=>el.classList.remove('active')); document.querySelector('[data-route="dashboard"]').classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); }
+
+// Delete handlers
+function deleteExpense(id){ if(!confirm('Delete this expense?')) return; DB.expenses = DB.expenses.filter(x=>x.id!==id); saveDB(DB); renderAll(); showToast('Expense deleted'); }
+function deleteGroup(id){ if(!confirm('Delete this group and its expenses?')) return; DB.groups = DB.groups.filter(x=>x.id!==id); DB.expenses = DB.expenses.filter(x=>x.groupId!==id); saveDB(DB); renderAll(); showToast('Group deleted'); }
+
+</script>
+</body>
+</html>
